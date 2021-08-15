@@ -1,0 +1,10 @@
+{
+  "name": "maximalist_hello",
+  "version": "1.0.0",
+  "description": "The most convoluted hello world ever, in nodeJS",
+  "main": "index.js",
+  "repository": "https://github.com/vincens2005/maximalist_hello.git",
+  "author": "Cukmekerb",
+  "license": "GPL-3.0-only",
+  "private": false
+}
