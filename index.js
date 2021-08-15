@@ -74,6 +74,7 @@ function get_random_cow() {
 
 async function main() {
 	if (args.verbose) console.log("running in verbose mode");
+	if (args.verbose && args.cow) console.log("running in cow mode. text will be ignored.");
 	setup_server();
 	let string_to_print = args.cow ? get_random_cow() : args.text || "hello world";
 	await print_from_server(string_to_print);
