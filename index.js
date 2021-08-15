@@ -3,15 +3,21 @@ var fetch = require("node-fetch");
 var express = require("express");
 var jsSHA = require("jssha");
 var argparse = require("argparse");
+var {Random} = require("random-js");
+var cows = require("cows");
+
 
 var PORT = process.env.PORT || 8888;
 var args = get_cli_args();
+var random = new Random();
 
 /** returns the cli args **/
 function get_cli_args() {
 	let parser = new argparse.ArgumentParser();
-	parser.add_argument("--text");
-	parser.add_argument("-v", {dest: "verbose", action: "store_true"});
+	parser.add_argument("--text", {help: "text to print"});
+	parser.add_argument("-v", {dest: "verbose", action: "store_true", help: "enables verbose mode"});
+	parser.add_argument("--stay-alive", {dest: "stay_alive", action: "store_true", help: "keeps the server alive after printing text"});
+	parser.add_argument("-c", "--cow", {dest: "cow", action: "store_true", help: "enables cow mode"});
 	return parser.parse_args();
 }
 /* this server returns whatever you put after the slash */
@@ -26,6 +32,7 @@ function setup_server() {
 	app.get("/:text", (req, res) => {
 		let text = req.params.text;
 		if (args.verbose) console.log("got request to /" + text);
+		res.set("Content-Type", "text/plain");
 		res.send(text);
 	});
 	
@@ -52,20 +59,25 @@ function verify_hash(text, old) {
 async function print_from_server(text) {
 	let texts = text.split(/\s|\t/);
 	let text_to_print = "";
+	if (args.cow) texts = [text];
 	for (let item of texts) {
-		let response = await fetch("http://localhost:" + PORT + "/" + item).then(a => a.text());
+		let response = await fetch("http://localhost:" + PORT + "/" + encodeURIComponent(item)).then(a => a.text());
 		if (!verify_hash(response, item)) return console.error("ERR: hashes don't match!");
 		text_to_print += response + " ";
 	}
-	console.log(text_to_print)
+	console.log(text_to_print);
+}
+
+function get_random_cow() {
+	return random.pick(cows());
 }
 
 async function main() {
 	if (args.verbose) console.log("running in verbose mode");
 	setup_server();
-	let string_to_print = args.text || "hello world";
+	let string_to_print = args.cow ? get_random_cow() : args.text || "hello world";
 	await print_from_server(string_to_print);
-	process.exit();
+	if (!args.stay_alive) process.exit();
 }
 
 
