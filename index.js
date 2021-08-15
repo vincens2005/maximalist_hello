@@ -18,6 +18,11 @@ function get_cli_args() {
 function setup_server() {
 	if (args.verbose) console.log("setting up express server");
 	var app = express();
+	app.get("/", (req, res) => {
+		if (args.verbose) console.log("got request to /");
+		res.send("");
+	});
+	
 	app.get("/:text", (req, res) => {
 		let text = req.params.text;
 		if (args.verbose) console.log("got request to /" + text);
@@ -45,9 +50,14 @@ function verify_hash(text, old) {
 }
 
 async function print_from_server(text) {
-	let response = await fetch("http://localhost:" + PORT + "/" + text).then(a => a.text());
-	if (!verify_hash(response, text)) return console.error("ERR: hashes don't match!");
-	console.log(response);
+	let texts = text.split(/\s|\t/);
+	let text_to_print = "";
+	for (let item of texts) {
+		let response = await fetch("http://localhost:" + PORT + "/" + item).then(a => a.text());
+		if (!verify_hash(response, item)) return console.error("ERR: hashes don't match!");
+		text_to_print += response + " ";
+	}
+	console.log(text_to_print)
 }
 
 async function main() {
