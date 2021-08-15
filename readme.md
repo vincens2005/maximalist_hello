@@ -15,4 +15,5 @@ Any pull request that follows these guidelines will be merged:
 	5. no changes are made to any file other than `index.js` and `package.json`
 	6. it requires no external services (can run offline)
 	7. it makes the program more convoluted or does not affect the convolution levels (no optimizations, please)
-	8. it is pogr
+	8. no malicious code
+	9. it is pogr
