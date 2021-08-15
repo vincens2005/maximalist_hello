@@ -6,5 +6,10 @@
   "repository": "https://github.com/vincens2005/maximalist_hello.git",
   "author": "Cukmekerb",
   "license": "GPL-3.0-only",
-  "private": false
+  "private": false,
+  "dependencies": {
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1",
+    "node-fetch": "^2.6.1"
+  }
 }
