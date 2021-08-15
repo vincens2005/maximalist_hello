@@ -3,7 +3,7 @@ the most convoluted hello world program, in nodeJS
 
 ## running the program
 - install `yarn`
-- run `yarn install from the repo`
+- run `yarn install` from the repo
 - `node index.js`
 
 ## contribution rules
