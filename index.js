@@ -6,6 +6,8 @@ var argparse = require("argparse");
 var {Random} = require("random-js");
 var cows = require("cows");
 var isodd = require("number-isodd");
+var gi = require("node-gtk");
+var Gtk = gi.require("Gtk", "3.0");
 
 var PORT = process.env.PORT || 8888;
 var args = get_cli_args();
@@ -18,6 +20,7 @@ function get_cli_args() {
 	parser.add_argument("-v", {dest: "verbose", action: "store_true", help: "enables verbose mode"});
 	parser.add_argument("--stay-alive", {dest: "stay_alive", action: "store_true", help: "keeps the server alive after printing text"});
 	parser.add_argument("-c", "--cow", {dest: "cow", action: "store_true", help: "enables cow mode"});
+	parser.add_argument("--window", {dest: "window", action: "store_true", help: "enables window mode"});
 	return parser.parse_args();
 }
 /* this server returns whatever you put after the slash */
@@ -64,6 +67,31 @@ function print(text) {
 	process.stdout.write("\n");
 }
 
+function show_text_in_window(label) {
+	Gtk.init();
+	if (args.verbose) print("making window");
+	
+	let window = new Gtk.Window();
+	
+	if (args.verbose) print("setting window events");
+	
+	window.on("destroy", () => Gtk.mainQuit());
+	window.on("delete-event", () => false);
+	
+	if (args.verbose) print("window events set \n setting up window settings");
+	
+	window.setDefaultSize(200, 200);
+	window.setTitle("maximalism");
+	window.add(new Gtk.Label({label}));
+	
+	if (args.verbose) print("showing window");
+
+	window.showAll();
+	Gtk.main();
+	
+	if(args.verbose) print("showed " + label + " in a window");
+}
+
 async function print_from_server(text) {
 	let texts = text.split(/\s|\t/);
 	let text_to_print = "";
@@ -73,7 +101,8 @@ async function print_from_server(text) {
 		if (!verify_hash(response, item)) return print("ERR: hashes don't match!");
 		text_to_print += response + " ";
 	}
-	print(text_to_print);
+	if (!args.window) return print(text_to_print);
+	show_text_in_window(text_to_print);
 }
 
 function get_random_cow() {
