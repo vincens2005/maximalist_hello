@@ -5,7 +5,7 @@ var jsSHA = require("jssha");
 var argparse = require("argparse");
 var {Random} = require("random-js");
 var cows = require("cows");
-
+var isodd = require("number-isodd");
 
 var PORT = process.env.PORT || 8888;
 var args = get_cli_args();
@@ -22,27 +22,27 @@ function get_cli_args() {
 }
 /* this server returns whatever you put after the slash */
 function setup_server() {
-	if (args.verbose) console.log("setting up express server");
+	if (args.verbose) print("setting up express server");
 	var app = express();
 	app.get("/", (req, res) => {
-		if (args.verbose) console.log("got request to /");
+		if (args.verbose) print("got request to /");
 		res.send("");
 	});
 	
 	app.get("/:text", (req, res) => {
 		let text = req.params.text;
-		if (args.verbose) console.log("got request to /" + text);
+		if (args.verbose) print("got request to /" + text);
 		res.set("Content-Type", "text/plain");
 		res.send(text);
 	});
 	
-	if (args.verbose) console.log("app is running at http://localhost:" + PORT);
+	if (args.verbose) print("app is running at http://localhost:" + PORT);
 	app.listen(PORT);
 }
 
 // makes sure the hashes of the two strings are the same
 function verify_hash(text, old) {
-	if (args.verbose) console.log("comparing hashes of " + text + " and " + old);
+	if (args.verbose) print("comparing hashes of " + text + " and " + old);
 	let old_hash = new jsSHA("SHA-512", "TEXT", {encoding: "UTF8"});
 	old_hash.update(old);
 	old_hash = old_hash.getHash("HEX");
@@ -51,9 +51,17 @@ function verify_hash(text, old) {
 	new_hash.update(text);
 	new_hash = new_hash.getHash("HEX");
 	
-	if (args.verbose) console.log("hash of old: " + old_hash + "\nhash of new: " + new_hash);
+	if (args.verbose) print("hash of old: " + old_hash + "\nhash of new: " + new_hash);
 	
 	return new_hash == old_hash;
+}
+
+function print(text) {
+	let chars = text.split("");
+	for (let char of chars) {
+		process.stdout.write(char);
+	}
+	process.stdout.write("\n");
 }
 
 async function print_from_server(text) {
@@ -62,10 +70,10 @@ async function print_from_server(text) {
 	if (args.cow) texts = [text];
 	for (let item of texts) {
 		let response = await fetch("http://localhost:" + PORT + "/" + encodeURIComponent(item)).then(a => a.text());
-		if (!verify_hash(response, item)) return console.error("ERR: hashes don't match!");
+		if (!verify_hash(response, item)) return print("ERR: hashes don't match!");
 		text_to_print += response + " ";
 	}
-	console.log(text_to_print);
+	print(text_to_print);
 }
 
 function get_random_cow() {
@@ -73,8 +81,10 @@ function get_random_cow() {
 }
 
 async function main() {
-	if (args.verbose) console.log("running in verbose mode");
-	if (args.verbose && args.cow) console.log("running in cow mode. text will be ignored.");
+	if (args.verbose) print("running in verbose mode");
+	if (args.verbose && args.cow) print("running in cow mode. text will be ignored.");
+	if (isodd(PORT)) PORT++;
+	if (isodd(PORT) && args.verbose) print("port is odd. adding one.");
 	setup_server();
 	let string_to_print = args.cow ? get_random_cow() : args.text || "hello world";
 	await print_from_server(string_to_print);

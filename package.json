@@ -14,6 +14,7 @@
     "express": "^4.17.1",
     "jssha": "^3.2.0",
     "node-fetch": "^2.6.1",
+    "number-isodd": "^0.1.4",
     "random-js": "^2.1.0"
   }
 }
