@@ -60,11 +60,11 @@ function verify_hash(text, old) {
 }
 
 function print(text) {
+	process.stdout.write("\n");
 	let chars = text.split("");
 	for (let char of chars) {
 		process.stdout.write(char);
 	}
-	process.stdout.write("\n");
 }
 
 function show_text_in_window(label) {
