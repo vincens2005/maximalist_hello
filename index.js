@@ -6,18 +6,20 @@ var argparse = require("argparse");
 var {Random} = require("random-js");
 var cows = require("cows");
 var isodd = require("number-isodd");
+var iseven = require("isevenpp");
 var gi = require("node-gtk");
 var Gtk = gi.require("Gtk", "3.0");
 
 var PORT = process.env.PORT || 8888;
 var args = get_cli_args();
 var random = new Random();
+var writtentostdout = false
 
 /** returns the cli args **/
 function get_cli_args() {
 	let parser = new argparse.ArgumentParser();
 	parser.add_argument("--text", {help: "text to print"});
-	parser.add_argument("-v", {dest: "verbose", action: "store_true", help: "enables verbose mode"});
+	parser.add_argument("-v", "--verbose", {dest: "verbose", action: "store_true", help: "enables verbose mode"});
 	parser.add_argument("--stay-alive", {dest: "stay_alive", action: "store_true", help: "keeps the server alive after printing text"});
 	parser.add_argument("-c", "--cow", {dest: "cow", action: "store_true", help: "enables cow mode"});
 	parser.add_argument("--window", {dest: "window", action: "store_true", help: "enables window mode"});
@@ -60,11 +62,12 @@ function verify_hash(text, old) {
 }
 
 function print(text) {
-	process.stdout.write("\n");
+	if (writtentostdout) process.stdout.write("\n");
 	let chars = text.split("");
 	for (let char of chars) {
 		process.stdout.write(char);
 	}
+	writtentostdout = true
 }
 
 function show_text_in_window(label) {
@@ -112,12 +115,12 @@ function get_random_cow() {
 async function main() {
 	if (args.verbose) print("running in verbose mode");
 	if (args.verbose && args.cow) print("running in cow mode. text will be ignored.");
-	if (isodd(PORT)) PORT++;
-	if (isodd(PORT) && args.verbose) print("port is odd. adding one.");
+	if (isodd(PORT) || !iseven(PORT)) PORT++;
+	if ((isodd(PORT) || !iseven(PORT)) && args.verbose) print("port is odd. adding one.");
 	setup_server();
 	let string_to_print = args.cow ? get_random_cow() : args.text || "hello world";
 	await print_from_server(string_to_print);
-	if (!args.stay_alive) process.exit();
+	if (!args.stay_alive) process.exit(-1);
 }
 
 
